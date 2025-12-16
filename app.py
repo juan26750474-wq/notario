@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 import streamlit as st
 import hashlib
 import json
 from datetime import datetime
 
-# --- CONFIGURACIÓN DE LA PÁGINA ---
+# --- CONFIGURACIç² DE LA Pç¤INA ---
 st.set_page_config(page_title="Mi Blockchain Segura", page_icon="??", layout="wide")
 
 # --- FUNCIONES BLOCKCHAIN ---
@@ -44,74 +45,74 @@ def verificar_cadena(cadena):
             
     return len(errores) == 0, errores
 
-# --- GESTIÓN DE ESTADO (MEMORIA) ---
+# --- GESTIç² DE ESTADO (MEMORIA) ---
 if 'blockchain' not in st.session_state:
-    # Bloque Génesis (el primero de la cadena)
+    # Bloque Gå¹¯esis (el primero de la cadena)
     genesis = {
-        "mensaje": "Bloque Génesis - Inicio del Ledger",
+        "mensaje": "Bloque Gå¹¯esis - Inicio del Ledger",
         "timestamp": str(datetime.now()),
         "hash_anterior": "0"
     }
     genesis["hash"] = calcular_hash(genesis)
     st.session_state.blockchain = [genesis]
 
-# --- INTERFAZ GRÁFICA ---
+# --- INTERFAZ GRç£¯ICA ---
 st.title("?? Simulador de Blockchain")
 st.markdown("""
-Esta aplicación permite demostrar cómo funciona una cadena de bloques básica:
+Esta aplicacié® permite demostrar cé”o funciona una cadena de bloques bå«³ica:
 * **Inmutabilidad:** Cada bloque depende del anterior.
 * **Hashing:** Cualquier cambio rompe la cadena.
 """)
 
-# Pestañas para organizar la aplicación
-tab1, tab2, tab3 = st.tabs(["?? Añadir Bloques", "?????? Validar Cadena", "?? Zona Hacker"])
+# Pestaé™s para organizar la aplicacié®
+tab1, tab2, tab3 = st.tabs(["?? Aé™dir Bloques", "?????? Validar Cadena", "?? Zona Hacker"])
 
-# --- PESTAÑA 1: AÑADIR ---
+# --- PESTAå“» 1: Aå“»DIR ---
 with tab1:
     st.subheader("Registrar Nuevo Mensaje")
     col1, col2 = st.columns([3, 1])
     
     with col1:
-        nuevo_mensaje = st.text_input("Datos del bloque:", placeholder="Ej: Juan envía 50 BTC a María")
+        nuevo_mensaje = st.text_input("Datos del bloque:", placeholder="Ej: Juan envç‡° 50 BTC a Març‡°")
     
     with col2:
         st.write("") # Espacio para alinear
         st.write("")
-        if st.button("Añadir Bloque", use_container_width=True):
+        if st.button("Aé™dir Bloque", use_container_width=True):
             if nuevo_mensaje:
                 ultimo_bloque = st.session_state.blockchain[-1]
                 nuevo = crear_bloque(nuevo_mensaje, ultimo_bloque['hash'])
                 st.session_state.blockchain.append(nuevo)
-                st.success("¡Bloque minado y añadido!")
+                st.success("ã€loque minado y aé™dido!")
             else:
-                st.warning("El mensaje no puede estar vacío.")
+                st.warning("El mensaje no puede estar vacç”.")
 
     st.divider()
     st.subheader("Libro Mayor (Ledger)")
-    # Mostramos los bloques en orden inverso (el más nuevo arriba)
+    # Mostramos los bloques en orden inverso (el må«³ nuevo arriba)
     for i in range(len(st.session_state.blockchain) - 1, -1, -1):
         bloque = st.session_state.blockchain[i]
         with st.expander(f"Bloque #{i} | {bloque['timestamp']}", expanded=(i == len(st.session_state.blockchain)-1)):
             st.code(json.dumps(bloque, indent=4), language='json')
 
-# --- PESTAÑA 2: VALIDAR ---
+# --- PESTAå“» 2: VALIDAR ---
 with tab2:
-    st.subheader("Auditoría de Integridad")
+    st.subheader("Auditorç‡° de Integridad")
     if st.button("Verificar Blockchain Completa"):
         es_valida, lista_errores = verificar_cadena(st.session_state.blockchain)
         
         if es_valida:
             st.balloons()
-            st.success("? ESTADO: VÁLIDO. La cadena es íntegra y segura.")
+            st.success("? ESTADO: Vç°‡IDO. La cadena es ç’¯tegra y segura.")
         else:
             st.error("? ESTADO: CORRUPTO. Se han detectado manipulaciones.")
             for error in lista_errores:
                 st.write(error)
 
-# --- PESTAÑA 3: HACKER ---
+# --- PESTAå“» 3: HACKER ---
 with tab3:
     st.subheader("Simulador de Ataque")
-    st.warning("Advertencia: Modificar un bloque romperá la cadena de confianza.")
+    st.warning("Advertencia: Modificar un bloque romperï¿½ la cadena de confianza.")
     
     if len(st.session_state.blockchain) > 1:
         indice = st.number_input("Selecciona el ID del bloque a manipular:", 
@@ -125,9 +126,9 @@ with tab3:
         nuevo_texto_falso = st.text_input("Nuevo contenido falso:", value=bloque_a_hackear['mensaje'])
         
         if st.button("Aplicar Hackeo"):
-            # Modificamos el mensaje SIN recalcular el hash (simulando alteración maliciosa)
+            # Modificamos el mensaje SIN recalcular el hash (simulando alteracié® maliciosa)
             st.session_state.blockchain[indice]['mensaje'] = nuevo_texto_falso
-            st.toast(f"¡Bloque {indice} alterado con éxito!", icon="??")
-            st.info("Ahora ve a la pestaña 'Validar Cadena' para ver el resultado.")
+            st.toast(f"ã€loque {indice} alterado con æ†–ito!", icon="??")
+            st.info("Ahora ve a la pestaé™ 'Validar Cadena' para ver el resultado.")
     else:
-        st.info("Añade algunos bloques primero para poder hackearlos.")
+        st.info("Aé™de algunos bloques primero para poder hackearlos.")
