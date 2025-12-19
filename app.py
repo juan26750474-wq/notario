@@ -66,7 +66,7 @@ except Exception as e:
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/1909/1909746.png", width=100)
     st.markdown("## 👨‍⚖️ Notaría Digital")
-    st.info(f"**ADMINISTRADOR**\n\nOperativo")
+    st.info(f"**ADMINISTRADOR**\n\Pérez-Mesa\n\Operativo")
     st.code(MY_ADDRESS, language="text")
     st.caption("Los archivos adjuntos no se suben a la red, solo se registra su huella digital (Hash SHA256) para garantizar privacidad.")
     st.write("---")
