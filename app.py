@@ -34,7 +34,7 @@ try:
     RPC_URL = "https://rpc.sepolia.org" # O usa st.secrets["RPC_URL"] si prefieres
     PRIVATE_KEY = st.secrets["PRIVATE_KEY"]
     MY_ADDRESS = st.secrets["MY_ADDRESS"]
-    CONTRACT_ADDRESS = "0xPEGA_AQUI_TU_CONTRATO_REAL" # <--- ¡CAMBIA ESTO!
+    CONTRACT_ADDRESS = "0x8b4abC6b53Cc7861E2353417837631092E0118F4" # <--- ¡CAMBIA ESTO!
     
     w3 = Web3(Web3.HTTPProvider(RPC_URL))
     
