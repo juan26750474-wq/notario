@@ -27,29 +27,32 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- CONEXIÓN AL CEREBRO (Tu Wallet paga) ---
+# --- CONEXIÓN AL CEREBRO ---
 try:
-    # ---------------------------------------------------------
-    # IMPORTANTE: Asegúrate de que tus secrets.toml estén bien, 
-    # o pon tus claves aquí entre comillas si te da error.
-    # ---------------------------------------------------------
-    RPC_URL = "https://rpc.sepolia.org"
+    # 1. CAMBIO IMPORTANTE: Usamos un servidor RÁPIDO (Ankr) para que no se atasque
+    RPC_URL = "https://rpc.ankr.com/eth_sepolia"
     
-    # Intenta leer de los secretos de Streamlit
+    # 2. TU CLAVE PRIVADA
+    # Intenta leer de los secretos de Streamlit (si lo subes a la nube)
     try:
         PRIVATE_KEY = st.secrets["PRIVATE_KEY"]
         MY_ADDRESS = st.secrets["MY_ADDRESS"]
     except:
-        # SI ESTO FALLA, PON TUS CLAVES AQUÍ ABAJO DIRECTAMENTE (SOLO PARA PRUEBAS):
-        PRIVATE_KEY = "0x2238dea54e2e708183e4dd7bddca272662bc21c28293aade9483e7776cc598c2" 
+        # ------------------------------------------------------------------
+        # ¡¡¡OJO AQUÍ!!! 👇👇👇
+        # BORRA LO QUE HAY DENTRO DE LAS COMILLAS Y PEGA TU CLAVE LARGA DEL ZORRO
+        # ------------------------------------------------------------------
+        PRIVATE_KEY = "Arriba21212020" 
+        
+        # Tu dirección pública (la corta que empieza por 0xB5F...)
         MY_ADDRESS = "0xB5F33631B98eA9A54D3d3896dFBE6F7cC6D77d7e"
     
-    # TU NUEVO CONTRATO (YA PUESTO):
+    # TU CONTRATO (Correcto)
     CONTRACT_ADDRESS = "0x8b4abC6b53Cc7861E2353417837631092E0118F4" 
     
     w3 = Web3(Web3.HTTPProvider(RPC_URL))
     
-    # ABI CORRECTO para el contrato 'Notario'
+    # ABI CORRECTO
     CONTRACT_ABI = [
         {
             "anonymous": False,
@@ -95,7 +98,6 @@ with st.container():
                     # 1. Preparamos la transacción
                     nonce = w3.eth.get_transaction_count(MY_ADDRESS)
                     
-                    # LLAMAMOS A LA FUNCIÓN 'REGISTRAR' (La que sí existe)
                     tx = contract.functions.registrar(texto).build_transaction({
                         'chainId': 11155111, # Sepolia ID
                         'gas': 500000,       
