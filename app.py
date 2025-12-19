@@ -1,134 +1,134 @@
-# -*- coding: utf-8 -*-
-import streamlit as st
-import hashlib
-import json
-from datetime import datetime
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crea tus Mensajes Para Siempre</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <style>
+        body { background-color: #111; color: #eee; font-family: 'Courier New', Courier, monospace; text-align: center; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #222; padding: 30px; border-radius: 15px; box-shadow: 0 0 20px rgba(0,255,0,0.2); }
+        h1 { color: #00ff88; text-transform: uppercase; }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; font-size: 16px; }
+        input, select { background: #333; color: white; border: 1px solid #444; }
+        button { cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-connect { background: #ff9900; color: black; }
+        .btn-mint { background: #00ff88; color: black; }
+        .btn-transfer { background: #00bfff; color: black; }
+        button:hover { opacity: 0.8; }
+        #status { margin-top: 20px; font-size: 14px; color: #aaa; word-break: break-all; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
 
-# --- CONFIGURACIÓN DE LA PÁGINA ---
-st.set_page_config(page_title="Mi Blockchain Segura", page_icon="🔗", layout="wide")
+    <div class="container">
+        <h1>📜 Mensajes Eternos</h1>
+        <p>Inmortaliza tus palabras en la Blockchain.</p>
 
-# --- FUNCIONES BLOCKCHAIN ---
-def calcular_hash(bloque):
-    """Genera el hash SHA-256 de un bloque"""
-    bloque_copy = bloque.copy()
-    if 'hash' in bloque_copy:
-        del bloque_copy['hash']
-    # Ordenamos las keys para asegurar que el hash sea consistente
-    bloque_str = json.dumps(bloque_copy, sort_keys=True).encode('utf-8')
-    return hashlib.sha256(bloque_str).hexdigest()
+        <button id="connectBtn" class="btn-connect" onclick="conectarWallet()">🔌 Conectar MetaMask</button>
+        <p id="walletAddress" style="color:#ff9900; font-size: 12px;"></p>
 
-def crear_bloque(mensaje, hash_anterior):
-    """Crea la estructura de un nuevo bloque"""
-    bloque = {
-        "mensaje": mensaje,
-        "timestamp": str(datetime.now()),
-        "hash_anterior": hash_anterior
-    }
-    bloque["hash"] = calcular_hash(bloque)
-    return bloque
+        <hr style="border-color: #333; margin: 20px 0;">
 
-def verificar_cadena(cadena):
-    """Recorre la cadena buscando manipulaciones"""
-    errores = []
-    for i in range(1, len(cadena)):
-        actual = cadena[i]
-        anterior = cadena[i-1]
+        <div id="app" class="hidden">
+            <h3>1. Crear Nuevo Mensaje</h3>
+            <input type="text" id="mensajeInput" placeholder="Escribe tu mensaje eterno..." maxlength="50">
+            <select id="tipoInput">
+                <option value="Escrito">📝 Escrito Personal</option>
+                <option value="Contrato">⚖️ Contrato / Acuerdo</option>
+                <option value="Profecia">🔮 Profecía</option>
+            </select>
+            <button class="btn-mint" onclick="crearMensaje()">Grabar en Blockchain ⛏️</button>
+
+            <br><br>
+
+            <h3>2. Regalar / Transferir</h3>
+            <input type="number" id="idInput" placeholder="ID del NFT (ej: 1)">
+            <input type="text" id="destinatarioInput" placeholder="Dirección destino (0x...)">
+            <button class="btn-transfer" onclick="transferir()">Transferir Propiedad 🎁</button>
+        </div>
+
+        <p id="status"></p>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN ---
+        // ⚠️ PEGA AQUÍ LA DIRECCIÓN DE TU CONTRATO QUE CREASTE EN REMIX
+        const CONTRACT_ADDRESS = "0xTU_DIRECCION_DE_CONTRATO_AQUI"; 
         
-        # 1. Verificar enlace (hash anterior)
-        if actual['hash_anterior'] != anterior['hash']:
-            errores.append(f"🔗 ROTURA DE ENLACE entre Bloque {i-1} y {i}")
-        
-        # 2. Verificar contenido (hash recalculado)
-        hash_recalculado = calcular_hash(actual)
-        if hash_recalculado != actual['hash']:
-            errores.append(f"⚠️ CONTENIDO ALTERADO en Bloque {i}: El mensaje no coincide con la huella.")
+        // El ABI Mínimo para que la web entienda el contrato
+        const ABI = [
+            "function crearMensaje(string memory _texto, string memory _tipo) public returns (uint256)",
+            "function safeTransferFrom(address from, address to, uint256 tokenId) public"
+        ];
+
+        let provider, signer, contract;
+
+        // 1. CONECTAR METAMASK
+        async function conectarWallet() {
+            if (window.ethereum) {
+                try {
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    await provider.send("eth_requestAccounts", []); // Pide permiso al usuario
+                    signer = provider.getSigner();
+                    const address = await signer.getAddress();
+                    
+                    document.getElementById("walletAddress").innerText = "Conectado: " + address;
+                    document.getElementById("connectBtn").classList.add("hidden");
+                    document.getElementById("app").classList.remove("hidden");
+                    
+                    // Conectamos con el contrato
+                    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+                    mostrarStatus("🟢 Sistema listo. Esperando órdenes.");
+                } catch (error) {
+                    mostrarStatus("🔴 Error: " + error.message);
+                }
+            } else {
+                alert("Necesitas instalar MetaMask!");
+            }
+        }
+
+        // 2. FUNCIÓN CREAR MENSAJE
+        async function crearMensaje() {
+            const texto = document.getElementById("mensajeInput").value;
+            const tipo = document.getElementById("tipoInput").value;
             
-    return len(errores) == 0, errores
+            if (!texto) return alert("Escribe algo!");
 
-# --- GESTIÓN DE ESTADO (MEMORIA) ---
-if 'blockchain' not in st.session_state:
-    # Bloque Génesis (el primero de la cadena)
-    genesis = {
-        "mensaje": "Bloque Génesis - Inicio del Ledger",
-        "timestamp": str(datetime.now()),
-        "hash_anterior": "0"
-    }
-    genesis["hash"] = calcular_hash(genesis)
-    st.session_state.blockchain = [genesis]
+            try {
+                mostrarStatus("⏳ MetaMask se abrirá. Confirma la transacción...");
+                const tx = await contract.crearMensaje(texto, tipo);
+                mostrarStatus("⛏️ Minando en la Blockchain... Espere...");
+                await tx.wait(); // Esperamos a que se confirme
+                mostrarStatus("🎉 ¡ÉXITO! Mensaje grabado para siempre. Hash: " + tx.hash);
+            } catch (error) {
+                mostrarStatus("❌ Error: " + error.message);
+            }
+        }
 
-# --- INTERFAZ GRÁFICA ---
-st.title("🔗 Simulador de Blockchain")
-st.markdown("""
-Esta aplicación permite demostrar cómo funciona una cadena de bloques básica:
-* **Inmutabilidad:** Cada bloque depende del anterior.
-* **Hashing:** Cualquier cambio rompe la cadena.
-""")
+        // 3. FUNCIÓN TRANSFERIR
+        async function transferir() {
+            const id = document.getElementById("idInput").value;
+            const to = document.getElementById("destinatarioInput").value;
+            const from = await signer.getAddress();
 
-# Pestañas para organizar la aplicación
-tab1, tab2, tab3 = st.tabs(["📝 Añadir Bloques", "🕵️‍♂️ Validar Cadena", "😈 Zona Hacker"])
+            if (!id || !to) return alert("Faltan datos");
 
-# --- PESTAÑA 1: AÑADIR ---
-with tab1:
-    st.subheader("Registrar Nuevo Mensaje")
-    col1, col2 = st.columns([3, 1])
-    
-    with col1:
-        nuevo_mensaje = st.text_input("Datos del bloque:", placeholder="Ej: Juan envía 50 BTC a María")
-    
-    with col2:
-        st.write("") # Espacio para alinear
-        st.write("")
-        if st.button("Añadir Bloque", use_container_width=True):
-            if nuevo_mensaje:
-                ultimo_bloque = st.session_state.blockchain[-1]
-                nuevo = crear_bloque(nuevo_mensaje, ultimo_bloque['hash'])
-                st.session_state.blockchain.append(nuevo)
-                st.success("¡Bloque minado y añadido!")
-            else:
-                st.warning("El mensaje no puede estar vacío.")
+            try {
+                mostrarStatus("⏳ Pidiendo permiso de traspaso...");
+                const tx = await contract.safeTransferFrom(from, to, id);
+                mostrarStatus("🚚 Transfiriendo propiedad... Espere...");
+                await tx.wait();
+                mostrarStatus("✅ ¡HECHO! El NFT ya no es tuyo.");
+            } catch (error) {
+                mostrarStatus("❌ Error: " + error.reason || error.message);
+            }
+        }
 
-    st.divider()
-    st.subheader("Libro Mayor (Ledger)")
-    # Mostramos los bloques en orden inverso (el más nuevo arriba)
-    for i in range(len(st.session_state.blockchain) - 1, -1, -1):
-        bloque = st.session_state.blockchain[i]
-        with st.expander(f"Bloque #{i} | {bloque['timestamp']}", expanded=(i == len(st.session_state.blockchain)-1)):
-            st.code(json.dumps(bloque, indent=4, ensure_ascii=False), language='json')
-
-# --- PESTAÑA 2: VALIDAR ---
-with tab2:
-    st.subheader("Auditoría de Integridad")
-    if st.button("Verificar Blockchain Completa"):
-        es_valida, lista_errores = verificar_cadena(st.session_state.blockchain)
-        
-        if es_valida:
-            st.balloons()
-            st.success("✅ ESTADO: VÁLIDO. La cadena es íntegra y segura.")
-        else:
-            st.error("❌ ESTADO: CORRUPTO. Se han detectado manipulaciones.")
-            for error in lista_errores:
-                st.write(error)
-
-# --- PESTAÑA 3: HACKER ---
-with tab3:
-    st.subheader("Simulador de Ataque")
-    st.warning("Advertencia: Modificar un bloque romperá la cadena de confianza.")
-    
-    if len(st.session_state.blockchain) > 1:
-        indice = st.number_input("Selecciona el ID del bloque a manipular:", 
-                                min_value=0, 
-                                max_value=len(st.session_state.blockchain)-1, 
-                                step=1)
-        
-        bloque_a_hackear = st.session_state.blockchain[indice]
-        st.text(f"Contenido original: {bloque_a_hackear['mensaje']}")
-        
-        nuevo_texto_falso = st.text_input("Nuevo contenido falso:", value=bloque_a_hackear['mensaje'])
-        
-        if st.button("Aplicar Hackeo"):
-            # Modificamos el mensaje SIN recalcular el hash (simulando alteración maliciosa)
-            st.session_state.blockchain[indice]['mensaje'] = nuevo_texto_falso
-            st.toast(f"¡Bloque {indice} alterado con éxito!", icon="😈")
-            st.info("Ahora ve a la pestaña 'Validar Cadena' para ver el resultado.")
-    else:
-        st.info("Añade algunos bloques primero para poder hackearlos.")
+        function mostrarStatus(txt) {
+            document.getElementById("status").innerText = txt;
+        }
+    </script>
+</body>
+</html>
