@@ -8,6 +8,11 @@ st.set_page_config(page_title="Notario Blockchain Pro", page_icon="⚖️", layo
 # ESTILOS CSS
 st.markdown("""
     <style>
+    /* ESTO OCULTA EL MENÚ Y LA BARRA SUPERIOR */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
     .stButton>button {
         width: 100%;
         background-color: #2E86C1;
@@ -61,7 +66,7 @@ except Exception as e:
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/1909/1909746.png", width=100)
     st.markdown("## 👨‍⚖️ Notaría Digital")
-    st.info(f"**ADMINISTRADOR: Pérez-Mesa, J.C.**\n\nOperativo")
+    st.info(f"**ADMINISTRADOR**\n\nOperativo")
     st.code(MY_ADDRESS, language="text")
     st.caption("Los archivos adjuntos no se suben a la red, solo se registra su huella digital (Hash SHA256) para garantizar privacidad.")
     st.write("---")
