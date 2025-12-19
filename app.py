@@ -32,16 +32,16 @@ try:
     RPC_URL = "https://ethereum-sepolia.publicnode.com"
     
     # ------------------------------------------------------------------
-    # TUS CREDENCIALES
+    # GESTIÓN DE SECRETOS (SEGURIDAD)
     # ------------------------------------------------------------------
     try:
         PRIVATE_KEY = st.secrets["PRIVATE_KEY"]
         MY_ADDRESS = st.secrets["MY_ADDRESS"]
-    except:
-        # ¡¡¡ PEGA AQUÍ TU CLAVE SI NO USAS SECRETS !!!
-        PRIVATE_KEY = "Arriba21212020" 
-        MY_ADDRESS = "0xB5F33631B98eA9A54D3d3896dFBE6F7cC6D77d7e" # Tu dirección pública
-    
+    except (FileNotFoundError, KeyError):
+        st.error("⚠️ FALTAN LAS CLAVES DE SEGURIDAD")
+        st.warning("El código no tiene acceso a la clave privada. Por favor, configúrala en los 'Secrets' de Streamlit Cloud.")
+        st.stop()
+
     CONTRACT_ADDRESS = "0x8b4abC6b53Cc7861E2353417837631092E0118F4" 
     
     w3 = Web3(Web3.HTTPProvider(RPC_URL))
@@ -59,11 +59,9 @@ except Exception as e:
 
 # --- BARRA LATERAL ---
 with st.sidebar:
-    # Si tienes el logo.svg en la misma carpeta, descomenta esto:
-    # st.image("notario_logo.svg", width=150)
     st.image("https://cdn-icons-png.flaticon.com/512/1909/1909746.png", width=100)
     st.markdown("## 👨‍⚖️ Notaría Digital")
-    st.info(f"**ADMINISTRADOR Pérez-Mesa**\n\nOperativo")
+    st.info(f"**ADMINISTRADOR**\n\nOperativo")
     st.code(MY_ADDRESS, language="text")
     st.caption("Los archivos adjuntos no se suben a la red, solo se registra su huella digital (Hash SHA256) para garantizar privacidad.")
     st.write("---")
@@ -75,18 +73,17 @@ st.markdown("### Certificación de Textos y Documentos")
 with st.container():
     st.write("---")
     
-    # 1. DATOS (Igual que antes)
+    # 1. DATOS
     col1, col2 = st.columns(2)
     with col1:
         nombre = st.text_input("👤 Nombre del Solicitante:", placeholder="Ej: Ana García")
     with col2:
         identificador = st.text_input("🆔 DNI/Email (Opcional):", placeholder="Opcional")
 
-    # 2. TEXTO GRANDE (NUEVO)
-    # height=150 hace la caja más alta para escribir cómodo
+    # 2. TEXTO GRANDE
     mensaje = st.text_area("✍️ Contenido a Certificar:", height=150, placeholder="Escribe aquí tu contrato, declaración, poema o carta completa...")
     
-    # 3. SUBIDA DE ARCHIVOS (NUEVO)
+    # 3. SUBIDA DE ARCHIVOS
     st.markdown("#### 📎 Adjuntar Evidencia (Foto/PDF)")
     archivo = st.file_uploader("Sube un archivo para certificar que existe hoy (Se guardará su Huella Digital):", type=['png', 'jpg', 'pdf', 'txt'])
     
@@ -94,7 +91,6 @@ with st.container():
     nombre_archivo = ""
     
     if archivo is not None:
-        # MAGIA MATEMÁTICA: Calculamos el HASH del archivo
         bytes_data = archivo.getvalue()
         hash_object = hashlib.sha256(bytes_data)
         hash_archivo = hash_object.hexdigest()
@@ -105,25 +101,14 @@ with st.container():
 
     st.write("---")
     
-    # 4. ZONA DE SEGURIDAD
-    col_pin, col_btn = st.columns([2, 3])
-    
-    with col_pin:
-        pin_notario = st.text_input("🔐 PIN de Firma:", value="1234", type="password")
-    
-    with col_btn:
-        st.write("") 
-        st.write("") 
-        boton = st.button("🚀 REGISTRAR DOCUMENTO")
+    # 4. BOTÓN DE REGISTRO DIRECTO
+    st.write("") 
+    boton = st.button("🚀 REGISTRAR DOCUMENTO")
 
     if boton:
-        if pin_notario != "1234": # <--- TU PIN
-            st.error("⛔ PIN Incorrecto.")
-        elif not nombre or not mensaje:
+        if not nombre or not mensaje:
             st.warning("⚠️ Falta Nombre o Mensaje.")
         else:
-            # PREPARAMOS EL TEXTO FINAL
-            # Si hay archivo, añadimos su huella al texto
             texto_final = f"AUTOR: {nombre} ({identificador}) | DICE: {mensaje}"
             
             if archivo:
@@ -148,7 +133,6 @@ with st.container():
                     
                     st.success("¡REGISTRO COMPLETADO!")
                     
-                    # Mensaje bonito de resultado
                     st.markdown(f"""
                         <div class="success-box">
                             <h3>✅ Certificado Emitido</h3>
