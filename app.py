@@ -1,4 +1,4 @@
-mport streamlit as st
+import streamlit as st
 from web3 import Web3
 import hashlib # Necesario para las huellas digitales de las fotos
 
