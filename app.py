@@ -29,25 +29,24 @@ st.markdown("""
 
 # --- CONEXIÓN AL CEREBRO ---
 try:
-    # 1. CAMBIO IMPORTANTE: Usamos un servidor RÁPIDO (Ankr) para que no se atasque
-    RPC_URL = "https://rpc.ankr.com/eth_sepolia"
+    # 1. CAMBIO: Usamos este servidor PÚBLICO que funciona SIEMPRE y es GRATIS
+    RPC_URL = "https://ethereum-sepolia.publicnode.com"
     
     # 2. TU CLAVE PRIVADA
-    # Intenta leer de los secretos de Streamlit (si lo subes a la nube)
     try:
         PRIVATE_KEY = st.secrets["PRIVATE_KEY"]
         MY_ADDRESS = st.secrets["MY_ADDRESS"]
     except:
         # ------------------------------------------------------------------
-        # ¡¡¡OJO AQUÍ!!! 👇👇👇
-        # BORRA LO QUE HAY DENTRO DE LAS COMILLAS Y PEGA TU CLAVE LARGA DEL ZORRO
+        # ¡¡¡ PÉGALA AQUÍ ABAJO !!! 👇👇👇
+        # Borra lo de dentro de las comillas y pon tu clave real
         # ------------------------------------------------------------------
         PRIVATE_KEY = "Arriba21212020" 
         
-        # Tu dirección pública (la corta que empieza por 0xB5F...)
+        # Tu dirección pública 
         MY_ADDRESS = "0xB5F33631B98eA9A54D3d3896dFBE6F7cC6D77d7e"
     
-    # TU CONTRATO (Correcto)
+    # TU CONTRATO
     CONTRACT_ADDRESS = "0x8b4abC6b53Cc7861E2353417837631092E0118F4" 
     
     w3 = Web3(Web3.HTTPProvider(RPC_URL))
@@ -93,7 +92,7 @@ with st.container():
         if not texto:
             st.warning("⚠️ Escribe algo antes de enviar.")
         else:
-            with st.spinner("⛓️ Llamando al Notario Digital... (Espera 15 seg)"):
+            with st.spinner("⛓️ Escribiendo en el libro mayor... (Espera 15 seg)"):
                 try:
                     # 1. Preparamos la transacción
                     nonce = w3.eth.get_transaction_count(MY_ADDRESS)
