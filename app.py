@@ -109,7 +109,7 @@ with st.container():
     col_pin, col_btn = st.columns([2, 3])
     
     with col_pin:
-        pin_notario = st.text_input("🔐 PIN de Firma:", type="password")
+        pin_notario = st.text_input("🔐 PIN de Firma:", value="1234", type="password")
     
     with col_btn:
         st.write("") 
