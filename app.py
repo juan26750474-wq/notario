@@ -1,6 +1,7 @@
 import streamlit as st
 from web3 import Web3
 import hashlib # Necesario para las huellas digitales de las fotos
+import urllib.parse # Para pasar el texto a la web externa (opcional)
 
 # CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(page_title="Notario Blockchain Pro", page_icon="⚖️", layout="centered")
@@ -84,51 +85,58 @@ with st.sidebar:
 # --- INTERFAZ PRINCIPAL ---
 st.title("⚖️ Registro Oficial Blockchain")
 
-# SELECTOR DE MODO (El "circulito" que pedías)
-modo = st.radio(
-    "¿Qué tipo de operación vas a realizar?",
-    ["📜 Certificación Unilateral (Firmo Yo)", "🤝 Contrato Bilateral (Firma el Cliente)"],
-    captions=["El notario da fe de un hecho.", "El cliente firma con su propia Wallet."]
-)
+# 1. FORMULARIO COMÚN (Ahora está fuera del condicional para no perderse)
+st.markdown("### 📝 Redacción del Documento")
+
+col1, col2 = st.columns(2)
+with col1:
+    nombre = st.text_input("👤 Nombre del Solicitante:", placeholder="Ej: Ana García")
+with col2:
+    identificador = st.text_input("🆔 DNI/Email (Opcional):", placeholder="Opcional")
+
+mensaje = st.text_area("✍️ Contenido a Certificar:", height=150, placeholder="Escribe aquí tu contrato, declaración, poema o carta completa...")
+
+st.markdown("#### 📎 Adjuntar Evidencia (Foto/PDF)")
+archivo = st.file_uploader("Sube un archivo (Se guardará su Huella Digital):", type=['png', 'jpg', 'pdf', 'txt'])
+
+hash_archivo = "Sin adjuntos"
+nombre_archivo = ""
+
+if archivo is not None:
+    bytes_data = archivo.getvalue()
+    hash_object = hashlib.sha256(bytes_data)
+    hash_archivo = hash_object.hexdigest()
+    nombre_archivo = archivo.name
+    st.success(f"✅ Huella calculada: {hash_archivo[:10]}...")
 
 st.write("---")
 
-if modo == "📜 Certificación Unilateral (Firmo Yo)":
-    # --- MODO NORMAL (Tu código de siempre) ---
-    st.markdown("### Certificación de Textos y Documentos")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        nombre = st.text_input("👤 Nombre del Solicitante:", placeholder="Ej: Ana García")
-    with col2:
-        identificador = st.text_input("🆔 DNI/Email (Opcional):", placeholder="Opcional")
+# Preparamos el texto final independientemente del modo
+texto_final = ""
+if nombre and mensaje:
+    texto_final = f"AUTOR: {nombre} ({identificador}) | DICE: {mensaje}"
+    if archivo:
+        texto_final += f" | ADJUNTO: {nombre_archivo} (SHA256: {hash_archivo})"
 
-    mensaje = st.text_area("✍️ Contenido a Certificar:", height=150, placeholder="Escribe aquí tu declaración...")
-    
-    st.markdown("#### 📎 Adjuntar Evidencia (Foto/PDF)")
-    archivo = st.file_uploader("Sube un archivo (Se guardará su Huella Digital):", type=['png', 'jpg', 'pdf', 'txt'])
-    
-    hash_archivo = "Sin adjuntos"
-    nombre_archivo = ""
-    
-    if archivo is not None:
-        bytes_data = archivo.getvalue()
-        hash_object = hashlib.sha256(bytes_data)
-        hash_archivo = hash_object.hexdigest()
-        nombre_archivo = archivo.name
-        st.success(f"✅ Huella calculada: {hash_archivo[:10]}...")
+# 2. SELECTOR DE MODO DE FIRMA
+st.subheader("🚀 Selecciona el Método de Firma")
+modo = st.radio(
+    "¿Quién va a pagar la transacción?",
+    ["👤 Firma el Notario (Cliente no paga)", "🦊 Firma el Cliente (Con su MetaMask)"],
+    horizontal=True
+)
 
-    st.write("") 
-    boton = st.button("🚀 REGISTRAR DOCUMENTO (Pago Yo)")
+st.write("")
+
+if modo == "👤 Firma el Notario (Cliente no paga)":
+    # --- MODO 1: FIRMAS TÚ ---
+    st.info("ℹ️ El documento se registrará usando la cuenta del Notario.")
+    boton = st.button("🚀 REGISTRAR DOCUMENTO AHORA")
 
     if boton:
         if not nombre or not mensaje:
             st.warning("⚠️ Falta Nombre o Mensaje.")
         else:
-            texto_final = f"AUTOR: {nombre} ({identificador}) | DICE: {mensaje}"
-            if archivo:
-                texto_final += f" | ADJUNTO: {nombre_archivo} (SHA256: {hash_archivo})"
-            
             with st.spinner("⛓️ Grabando en Bloque..."):
                 try:
                     nonce = w3.eth.get_transaction_count(MY_ADDRESS)
@@ -153,20 +161,18 @@ if modo == "📜 Certificación Unilateral (Firmo Yo)":
                     st.error(f"Error: {e}")
 
 else:
-    # --- MODO CONTRATO (Redirige a tu HTML) ---
-    st.markdown("### 🤝 Firma de Contrato Externa")
-    st.info("""
-    **Estás en modo Contrato.**
+    # --- MODO 2: FIRMA EL CLIENTE ---
+    st.warning("⚠️ En este modo, el cliente debe tener MetaMask instalado y pagar el gas.")
     
-    En este modo, **no firmas tú**. El cliente debe conectar su propia Billetera (MetaMask) para que la firma criptográfica sea suya y tenga validez de no-repudio.
-    
-    Haz clic abajo para abrir el **Portal de Firma** seguro.
-    """)
-    
-    # URL DE TU SERVIDOR (Cámbiala si la ruta es distinta)
-    URL_FIRMA = "http://aprendidos.es/notaria/firma.html"
-    
-    st.write("")
-    st.write("")
-    # Este botón abre tu HTML en una pestaña nueva
-    st.link_button("➡️ ABRIR PORTAL DE FIRMA CLIENTE", URL_FIRMA)
+    if not nombre or not mensaje:
+        st.error("✍️ Por favor, rellena los datos arriba antes de continuar.")
+    else:
+        st.markdown("#### Copia este texto para firmar:")
+        st.code(texto_final, language="text")
+        
+        # URL DE TU SERVIDOR (Cámbiala si la ruta es distinta)
+        URL_FIRMA = "http://aprendidos.es/notaria/firma.html"
+        
+        st.write("")
+        # Este botón abre tu HTML en una pestaña nueva
+        st.link_button("➡️ IR AL PORTAL DE FIRMA CLIENTE", URL_FIRMA)
