@@ -128,7 +128,7 @@ modo = st.radio(
 
 st.write("")
 
-if modo == "👤 Firma el Notario (Cliente no paga)":
+if modo == "👤 Firma el Notario por el Cliente":
     # --- MODO 1: FIRMAS TÚ ---
     st.info("ℹ️ El documento se registrará usando la cuenta del Notario.")
     boton = st.button("🚀 REGISTRAR DOCUMENTO AHORA")
