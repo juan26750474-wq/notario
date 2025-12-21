@@ -122,13 +122,13 @@ if nombre and mensaje:
 st.subheader("🚀 Selecciona el Método de Firma")
 modo = st.radio(
     "¿Quién va a pagar la transacción?",
-    ["👤 Firma el Notario dando fe por el Cliente", "🦊 Contratos debería firmar el Cliente (Con MetaMask)"],
+    ["👤 Firma el Notario (Cliente no paga)", "🦊 Firma el Cliente (Con su MetaMask)"],
     horizontal=True
 )
 
 st.write("")
 
-if modo == "👤 Firma el Notario dando fe por el Cliente":
+if modo == "👤 Firma el Notario (Cliente no paga)":
     # --- MODO 1: FIRMAS TÚ ---
     st.info("ℹ️ El documento se registrará usando la cuenta del Notario.")
     boton = st.button("🚀 REGISTRAR DOCUMENTO AHORA")
@@ -162,15 +162,13 @@ if modo == "👤 Firma el Notario dando fe por el Cliente":
 
 else:
     # --- MODO 2: FIRMA EL CLIENTE ---
-    st.warning("⚠️ En este modo típico de contratos, el cliente será redirigido para firmar con su propia Billetera.")
+    st.warning("⚠️ En este modo, típico de contratos, el cliente será redirigido para firmar con su propia Billetera.")
     
     if not nombre or not mensaje:
         st.error("✍️ Por favor, rellena los datos arriba antes de continuar.")
     else:
-        st.markdown("#### Revisión del Texto a Enviar:")
-        st.code(texto_final, language="text")
+        # AQUÍ ESTÁ LA MAGIA DEL ENLACE (Sin mostrar el texto otra vez)
         
-        # --- AQUÍ ESTÁ LA MAGIA DEL ENLACE ---
         # 1. Codificamos el texto para que pueda viajar en una URL (cambia espacios por %20, etc)
         texto_codificado = urllib.parse.quote(texto_final)
         
