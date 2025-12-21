@@ -122,7 +122,7 @@ if nombre and mensaje:
 st.subheader("🚀 Selecciona el Método de Firma")
 modo = st.radio(
     "¿Quién va a pagar la transacción?",
-    ["👤 Firma el Notario (Cliente no paga)", "🦊 Firma el Cliente (Con su MetaMask)"],
+    ["👤 Firma el Notario por el Cliente", "🦊 Firma el Cliente (Con su billetera MetaMask)"],
     horizontal=True
 )
 
