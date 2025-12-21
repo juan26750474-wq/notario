@@ -122,13 +122,13 @@ if nombre and mensaje:
 st.subheader("🚀 Selecciona el Método de Firma")
 modo = st.radio(
     "¿Quién va a pagar la transacción?",
-    ["👤 Firma el Notario por el Cliente", "🦊 Firma el Cliente (Con su billetera MetaMask)"],
+    ["👤 Firma el Notario dando fe por el Cliente", "🦊 Contratos debería firmar el Cliente (Con MetaMask)"],
     horizontal=True
 )
 
 st.write("")
 
-if modo == "👤 Firma el Notario por el Cliente":
+if modo == "👤 Firma el Notario dando fe por el Cliente":
     # --- MODO 1: FIRMAS TÚ ---
     st.info("ℹ️ El documento se registrará usando la cuenta del Notario.")
     boton = st.button("🚀 REGISTRAR DOCUMENTO AHORA")
@@ -162,7 +162,7 @@ if modo == "👤 Firma el Notario por el Cliente":
 
 else:
     # --- MODO 2: FIRMA EL CLIENTE ---
-    st.warning("⚠️ En este modo, el cliente será redirigido para firmar con su propia Billetera.")
+    st.warning("⚠️ En este modo típico de contratos, el cliente será redirigido para firmar con su propia Billetera.")
     
     if not nombre or not mensaje:
         st.error("✍️ Por favor, rellena los datos arriba antes de continuar.")
