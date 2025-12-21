@@ -1,7 +1,7 @@
 import streamlit as st
 from web3 import Web3
 import hashlib # Necesario para las huellas digitales de las fotos
-import urllib.parse # Para pasar el texto a la web externa (opcional)
+import urllib.parse # NUEVO: Necesario para enviar el texto a la otra web
 
 # CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(page_title="Notario Blockchain Pro", page_icon="⚖️", layout="centered")
@@ -50,13 +50,13 @@ st.markdown("""
 try:
     RPC_URL = "https://ethereum-sepolia.publicnode.com"
     
-    # GESTIÓN DE SECRETOS
+    # GESTIÓN DE SECRETOS (SEGURIDAD)
     try:
         PRIVATE_KEY = st.secrets["PRIVATE_KEY"]
         MY_ADDRESS = st.secrets["MY_ADDRESS"]
     except (FileNotFoundError, KeyError):
         st.error("⚠️ FALTAN LAS CLAVES DE SEGURIDAD")
-        st.warning("Configura los 'Secrets' en Streamlit Cloud.")
+        st.warning("El código no tiene acceso a la clave privada. Por favor, configúrala en los 'Secrets' de Streamlit Cloud.")
         st.stop()
 
     CONTRACT_ADDRESS = "0x8b4abC6b53Cc7861E2353417837631092E0118F4" 
@@ -85,7 +85,7 @@ with st.sidebar:
 # --- INTERFAZ PRINCIPAL ---
 st.title("⚖️ Registro Oficial Blockchain")
 
-# 1. FORMULARIO COMÚN (Ahora está fuera del condicional para no perderse)
+# 1. FORMULARIO COMÚN
 st.markdown("### 📝 Redacción del Documento")
 
 col1, col2 = st.columns(2)
@@ -162,17 +162,23 @@ if modo == "👤 Firma el Notario (Cliente no paga)":
 
 else:
     # --- MODO 2: FIRMA EL CLIENTE ---
-    st.warning("⚠️ En este modo, el cliente debe tener MetaMask instalado y pagar el gas.")
+    st.warning("⚠️ En este modo, el cliente será redirigido para firmar con su propia Billetera.")
     
     if not nombre or not mensaje:
         st.error("✍️ Por favor, rellena los datos arriba antes de continuar.")
     else:
-        st.markdown("#### Copia este texto para firmar:")
+        st.markdown("#### Revisión del Texto a Enviar:")
         st.code(texto_final, language="text")
         
-        # URL DE TU SERVIDOR (Cámbiala si la ruta es distinta)
-        URL_FIRMA = "http://aprendidos.es/notaria/firma.html"
+        # --- AQUÍ ESTÁ LA MAGIA DEL ENLACE ---
+        # 1. Codificamos el texto para que pueda viajar en una URL (cambia espacios por %20, etc)
+        texto_codificado = urllib.parse.quote(texto_final)
+        
+        # 2. Construimos la URL completa con el parámetro ?texto=
+        # CAMBIA ESTA URL SI TU ARCHIVO HTML ESTÁ EN OTRO SITIO
+        URL_BASE = "http://aprendidos.es/notaria/firma.html"
+        URL_COMPLETA = f"{URL_BASE}?texto={texto_codificado}"
         
         st.write("")
-        # Este botón abre tu HTML en una pestaña nueva
-        st.link_button("➡️ IR AL PORTAL DE FIRMA CLIENTE", URL_FIRMA)
+        # Este botón abre tu HTML en una pestaña nueva con los datos ya cargados
+        st.link_button("➡️ ABRIR PORTAL DE FIRMA (Con datos cargados)", URL_COMPLETA)
